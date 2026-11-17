@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  effilume-dashboard:
+    build: .
+    container_name: effilume_consolidation_dashboard
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ./outputs:/app/outputs
+      - ./uploads:/app/uploads
+    restart: unless-stopped

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFFILUME DATA CONSOLIDATION</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header py-4 shadow-sm">
+        <div class="container-fluid px-lg-5">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="header-icon-box">
+                        <i class="fa-solid fa-bolt-lightning text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold mb-0 text-white tracking-wide">EFFILUME DATA CONSOLIDATION</h1>
+                        <p class="text-white-50 mb-0 small">Automated Date-Wise Smart Meter UID Data Processing</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-medium border border-success-subtle">
+                        <i class="fa-solid fa-circle-check me-1"></i> System Online
+                    </span>
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-medium border border-primary-subtle">
+                        <i class="fa-solid fa-file-excel me-1"></i> openpyxl & pandas Engine
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container-fluid px-lg-5 py-4">
+        <div class="row g-4">
+            
+            <!-- Left Column: Upload & Fixed Business Rules -->
+            <div class="col-lg-5">
+                <!-- Section A: Excel Upload -->
+                <div class="card border-0 shadow-sm mb-4 dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-primary"></i> A. Excel Workbook Upload
+                        </h5>
+                        <span class="badge bg-secondary-subtle text-secondary small">.xlsx / .xlsm</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Drag & Drop Box -->
+                        <div id="drop-zone" class="drop-zone text-center p-4 rounded-3 border-2 border-dashed">
+                            <input type="file" id="file-input" class="d-none" accept=".xlsx,.xlsm">
+                            <div class="drop-zone-content">
+                                <i class="fa-solid fa-file-excel fs-1 text-primary mb-3"></i>
+                                <h6 class="fw-semibold mb-1">Drag and drop your Excel workbook here</h6>
+                                <p class="text-muted small mb-3">or browse from your local files</p>
+                                <button type="button" class="btn btn-outline-primary btn-sm px-4 fw-medium" onclick="document.getElementById('file-input').click()">
+                                    <i class="fa-solid fa-folder-open me-2"></i> Browse File
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Uploaded File Info Card -->
+                        <div id="file-info-card" class="mt-3 p-3 rounded-2 bg-light border d-none">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <i class="fa-solid fa-file-circle-check text-success fs-5"></i>
+                                    <div class="text-truncate">
+                                        <div id="file-name" class="fw-semibold text-truncate small">filename.xlsx</div>
+                                        <div id="file-details" class="text-muted extra-small">Validating workbook...</div>
+                                    </div>
+                                </div>
+                                <button type="button" id="btn-remove-file" class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove file">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Detected Existing File Quick Action -->
+                        <div id="existing-file-alert" class="alert alert-info mt-3 py-2 px-3 d-flex align-items-center justify-content-between extra-small d-none">
+                            <div class="d-flex align-items-center gap-2 text-truncate">
+                                <i class="fa-solid fa-circle-info text-info"></i>
+                                <span class="text-truncate">Workspace File: <strong id="existing-file-name">BBMP smart meter UID Details New (2).xlsx</strong></span>
+                            </div>
+                            <button type="button" id="btn-use-existing" class="btn btn-xs btn-primary fw-medium text-nowrap ms-2">
+                                <i class="fa-solid fa-play me-1"></i> Use This File
+                            </button>
+                        </div>
+
+                        <!-- Process Action Button -->
+                        <div class="mt-3">
+                            <button type="button" id="btn-process" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm" disabled>
+                                <i class="fa-solid fa-gears me-2"></i> Start Consolidation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section B: Fixed Processing Configuration -->
+                <div class="card border-0 shadow-sm dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-sliders text-primary"></i> B. Processing Configuration
+                        </h5>
+                        <span class="badge bg-secondary-subtle text-secondary small"><i class="fa-solid fa-lock me-1"></i> Mandatory Rules</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="config-list">
+                            <div class="config-item p-3 mb-2 rounded bg-light border-start border-4 border-primary">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small fw-medium">Target Location:</span>
+                                    <span class="badge bg-primary text-white fw-bold px-2 py-1">EFFILUME</span>
+                                </div>
+                                <div class="extra-small text-muted mt-1">Excludes all other locations (e.g. Vincy Global, Transglobal, etc.)</div>
+                            </div>
+
+                            <div class="config-item p-3 mb-2 rounded bg-light border-start border-4 border-warning">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small fw-medium">Historical Date Extraction:</span>
+                                    <span class="badge bg-dark text-white font-monospace px-2 py-1">23.02.2026 - 17.03.2026</span>
+                                </div>
+                                <div class="extra-small text-muted mt-1">Discovered directly from unlinked existing historical worksheets</div>
+                            </div>
+
+                            <div class="config-item p-3 mb-2 rounded bg-light border-start border-4 border-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small fw-medium">Hyperlink-Based Extraction:</span>
+                                    <span class="badge bg-info text-dark font-monospace px-2 py-1">23.03.2026 Onwards</span>
+                                </div>
+                                <div class="extra-small text-muted mt-1">Resolved via Master Sheet Page Link destination targets</div>
+                            </div>
+
+                            <div class="config-item p-3 rounded bg-light border-start border-4 border-success">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small fw-medium">Consolidated Output:</span>
+                                    <span class="badge bg-success text-white font-monospace px-2 py-1">EFFILUME_Consolidated_Data</span>
+                                </div>
+                                <div class="extra-small text-muted mt-1">One continuous chronological sheet preserving original source values</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Status, Preview & Download -->
+            <div class="col-lg-7">
+                <!-- Section C: Processing Status -->
+                <div class="card border-0 shadow-sm mb-4 dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-primary"></i> C. Processing Status & Metrics
+                        </h5>
+                        <div id="status-pill" class="badge bg-secondary-subtle text-secondary small">Awaiting Workbook</div>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Progress Indicator -->
+                        <div id="progress-container" class="mb-4 d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-1 small">
+                                <span id="progress-message" class="text-muted fw-medium">Processing worksheets...</span>
+                                <span id="progress-percent" class="fw-bold text-primary">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metrics Grid -->
+                        <div class="row g-3" id="metrics-grid">
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Total Worksheets</div>
+                                    <div id="metric-total-sheets" class="fs-4 fw-bold text-dark">-</div>
+                                    <div class="extra-small text-muted">In workbook</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Historical Sheets</div>
+                                    <div id="metric-hist-sheets" class="fs-4 fw-bold text-warning">-</div>
+                                    <div class="extra-small text-muted">23.02 - 17.03</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Hyperlink Sheets</div>
+                                    <div id="metric-hl-sheets" class="fs-4 fw-bold text-info">-</div>
+                                    <div class="extra-small text-muted">23.03 onwards</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Processed Sheets</div>
+                                    <div id="metric-proc-sheets" class="fs-4 fw-bold text-success">-</div>
+                                    <div class="extra-small text-muted">Successfully extracted</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Skipped Sheets</div>
+                                    <div id="metric-skip-sheets" class="fs-4 fw-bold text-secondary">-</div>
+                                    <div class="extra-small text-muted">Missing links / other</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="metric-card p-3 rounded bg-light text-center border">
+                                    <div class="text-muted extra-small text-uppercase fw-semibold mb-1">Total Records</div>
+                                    <div id="metric-total-records" class="fs-4 fw-bold text-primary">-</div>
+                                    <div class="extra-small text-muted">EFFILUME UIDs</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Alert -->
+                        <div id="processing-alert" class="alert alert-warning mt-3 mb-0 d-none" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span id="processing-alert-text">Error message</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section E: Download Section -->
+                <div class="card border-0 shadow-sm mb-4 dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-file-export text-success"></i> E. Consolidated Output Download
+                        </h5>
+                        <span class="badge bg-success-subtle text-success small">Formatted Excel (.xlsx)</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div>
+                                <h6 class="fw-bold mb-1">Primary Sheet: <code class="text-primary">EFFILUME_Consolidated_Data</code></h6>
+                                <p class="text-muted small mb-0">Includes bold frozen headers, auto-filters, text UIDs, alternating rows & complete audit log.</p>
+                            </div>
+                            <div>
+                                <a id="btn-download" href="#" class="btn btn-success px-4 py-2 fw-semibold shadow-sm disabled">
+                                    <i class="fa-solid fa-download me-2"></i> Download EFFILUME Consolidated Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section D & Audit: Preview and Audit Log Section -->
+        <div class="row g-4 mt-1">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm dashboard-card">
+                    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <ul class="nav nav-tabs card-header-tabs" id="view-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-semibold" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-content" type="button" role="tab">
+                                    <i class="fa-solid fa-table me-2 text-primary"></i> D. Consolidated Records Preview
+                                    <span id="tab-record-count" class="badge bg-primary-subtle text-primary rounded-pill ms-1">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-semibold" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-content" type="button" role="tab">
+                                    <i class="fa-solid fa-clipboard-list me-2 text-secondary"></i> Processing Audit Log
+                                    <span id="tab-log-count" class="badge bg-secondary-subtle text-secondary rounded-pill ms-1">0</span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="filter-indicator" class="text-muted extra-small"></span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="view-tab-content">
+                            
+                            <!-- Tab 1: Records Preview -->
+                            <div class="tab-pane fade show active" id="preview-content" role="tabpanel">
+                                <!-- Filter Bar -->
+                                <div class="row g-2 mb-3 align-items-center">
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                            <input type="text" id="filter-uid" class="form-control" placeholder="Search Panel UID...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-barcode"></i></span>
+                                            <input type="text" id="filter-meter" class="form-control" placeholder="Search Meter Serial...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-calendar"></i></span>
+                                            <input type="text" id="filter-date" class="form-control" placeholder="Filter Date...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-sm-4">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-location-dot"></i></span>
+                                            <input type="text" class="form-control" value="EFFILUME" readonly title="Fixed to EFFILUME">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 d-flex gap-2">
+                                        <button type="button" id="btn-reset-filters" class="btn btn-sm btn-outline-secondary w-100">
+                                            <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Records Table -->
+                                <div class="table-responsive rounded border preview-table-container">
+                                    <table class="table table-sm table-hover table-striped mb-0 text-nowrap" id="records-table">
+                                        <thead class="table-dark sticky-top">
+                                            <tr id="records-table-header">
+                                                <th>Date</th>
+                                                <th>Location</th>
+                                                <th>S No</th>
+                                                <th>Panel UID</th>
+                                                <th>Meter Serial Number</th>
+                                                <th>Phase</th>
+                                                <th>Mode</th>
+                                                <th>FW Ver</th>
+                                                <th>Installable Since</th>
+                                                <th>Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="records-table-body">
+                                            <tr>
+                                                <td colspan="10" class="text-center py-5 text-muted">
+                                                    <i class="fa-solid fa-file-excel fs-2 mb-2 text-secondary d-block"></i>
+                                                    No records loaded yet. Upload and process a workbook to view extracted records.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination Bar -->
+                                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                                    <div class="extra-small text-muted" id="pagination-info">
+                                        Showing 0 - 0 of 0 records
+                                    </div>
+                                    <nav>
+                                        <ul class="pagination pagination-sm mb-0" id="pagination-controls">
+                                            <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
+                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                            <li class="page-item disabled"><a class="page-link" href="#">&raquo;</a></li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Processing Audit Log -->
+                            <div class="tab-pane fade" id="audit-content" role="tabpanel">
+                                <div class="table-responsive rounded border" style="max-height: 500px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover mb-0 text-nowrap">
+                                        <thead class="table-secondary sticky-top">
+                                            <tr>
+                                                <th>Date Processed</th>
+                                                <th>Source Worksheet</th>
+                                                <th>Source Type</th>
+                                                <th>Location</th>
+                                                <th>Records Extracted</th>
+                                                <th>Status</th>
+                                                <th>Details / Reason</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="audit-table-body">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4 text-muted">
+                                                    No processing logs yet. Process an Excel workbook to inspect the audit log.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-white border-top">
+        <div class="container-fluid px-lg-5 text-center text-muted extra-small">
+            EFFILUME Automated Excel Consolidation Dashboard &bull; Single Source of Truth &bull; Strict Duplicate Prevention &bull; SCHNELL BBMP Project
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+
