@@ -13,3 +13,4 @@ services:
       - ./outputs:/app/outputs
       - ./uploads:/app/uploads
     restart: unless-stopped
+
